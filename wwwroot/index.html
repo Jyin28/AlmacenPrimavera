@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#12372a">
+  <title>Primavera · Administración de tienda</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/settings.css">
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <section id="login" class="login-shell">
+    <div class="login-art">
+      <div class="brand-mark large">P</div>
+      <p class="eyebrow">Almacén Primavera</p>
+      <h1>Todo tu inventario,<br><em>en orden.</em></h1>
+      <p class="login-copy">Productos, precios y existencias con trazabilidad completa para trabajar con confianza.</p>
+      <div class="login-feature"><span>✓</span> Control por ubicación y libro mayor permanente</div>
+      <div class="login-feature"><span>✓</span> Recomendaciones de precio explicables</div>
+      <div class="login-feature"><span>✓</span> Auditoría de cada cambio sensible</div>
+    </div>
+    <form id="login-form" class="login-card">
+      <div class="brand-mobile"><div class="brand-mark">P</div> Primavera</div>
+      <p class="eyebrow">Bienvenido de nuevo</p>
+      <h2>Inicia sesión</h2>
+      <p class="muted">Usa tus credenciales de personal.</p>
+      <label>Usuario<input name="username" autocomplete="username" required></label>
+      <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
+      <p id="login-error" class="form-error"></p>
+      <button class="button primary full" type="submit">Entrar al sistema <span>→</span></button>
+      <p class="login-hint">Primer acceso: admin / Primavera-Admin!</p>
+    </form>
+  </section>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="logo"><div class="brand-mark">P</div><div><strong>Primavera</strong><small>Administración</small></div></div>
+      <nav id="nav" aria-label="Navegación principal">
+        <button data-view="dashboard" class="active"><span>⌂</span> Resumen</button>
+        <p>OPERACIONES</p>
+        <button data-view="products"><span>▦</span> Productos</button>
+        <button data-view="inventory"><span>◫</span> Inventario</button>
+        <button data-view="csv-assistant"><span>⇩</span> Asistente CSV</button>
+        <button data-view="pricing"><span>◇</span> Precios</button>
+        <p>ANÁLISIS</p>
+        <button data-view="reports"><span>↗</span> Reportes</button>
+      </nav>
+      <div class="sidebar-foot"><div class="avatar">AD</div><div class="user-meta"><strong id="user-name">Administrador</strong><small id="user-role">Administrador</small></div><button id="logout" title="Cerrar sesión">↪</button></div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <button id="menu" class="icon-button mobile">☰</button>
+        <div class="global-search"><span>⌕</span><input id="global-search" placeholder="Buscar producto, código o escanear…" autocomplete="off"><kbd>F2</kbd></div>
+        <div class="top-actions"><button class="icon-button" title="Alertas">♢<i></i></button><button id="quick-new" class="button primary">＋ Nuevo producto</button></div>
+      </header>
+      <div id="content" class="content"></div>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-backdrop" data-close></div><div class="modal-panel"><button class="modal-close" data-close aria-label="Cerrar">×</button><div id="modal-content"></div></div></div>
+  <script src="/app.js"></script>
+</body>
+</html>
