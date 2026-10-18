@@ -1,58 +1,41 @@
-# API
+# API simplificada
 
-Todas las rutas bajo `/api`, excepto `POST /api/auth/login`, exigen la cookie de sesión. Los errores de negocio usan JSON `{ "error": "mensaje" }` y códigos 400, 401, 403, 404 o 409.
+Todas las rutas /api requieren sesión salvo POST /api/auth/login. Administradores y gerentes pueden guardar cambios. Otros roles son de consulta. No hay API pública de compras, ventas, auditoría o movimientos de inventario.
 
-| Método | Ruta | Uso / permiso principal |
-|---|---|---|
-| POST | `/api/auth/login` | Iniciar sesión |
-| POST | `/api/auth/logout` | Cerrar sesión |
-| GET | `/api/auth/me` | Usuario y permisos actuales |
-| GET | `/api/lookups` | Categorías, proveedores, ubicaciones y configuración |
-| GET | `/api/dashboard` | Indicadores y alertas |
-| GET | `/api/products?q=&filter=&category=&page=` | Buscar y filtrar productos |
-| GET | `/api/products/{id}` | Producto, saldos, proveedores e historia |
-| POST | `/api/products` | Crear producto (`product.write`) |
-| PUT | `/api/products/{id}` | Editar todos los datos comerciales (`product.write`) |
-| PATCH | `/api/products/{id}/status` | Activar/desactivar (`product.deactivate`) |
-| POST | `/api/products/{id}/barcodes` | Asignar o resolver código (`product.write` / `barcode.resolve`) |
-| POST | `/api/inventory/adjust` | Ajuste por cantidad contada (`inventory.adjust`) |
-| POST | `/api/inventory/transfer` | Traslado atómico (`inventory.adjust`) |
-| POST | `/api/sales` | Registrar venta desde POS (`sale.record`) |
-| POST | `/api/pricing/recommend` | Crear recomendación pendiente (`price.view`) |
-| POST | `/api/pricing/{id}/decision` | Aprobar/rechazar (`price.approve`) |
-| GET | `/api/import/template` | Plantilla CSV |
-| POST | `/api/import/preview` | Previsualizar actualización de inventario CSV (`product.import`) |
-| POST | `/api/import/apply` | Actualizar inventario en una transacción (`product.import`) |
-| GET | `/api/reports/reorder` | Reposición (`reports.basic`) |
-| GET | `/api/reports/inventory` | Valor y margen (`reports.profit`) |
-| GET | `/api/audit` | Auditoría (`audit.view`) |
+| Método y ruta | Uso |
+| --- | --- |
+| POST /api/auth/login | {username,password}; crea cookie de sesión |
+| GET /api/auth/me | Usuario, nombre, rol y canEdit |
+| POST /api/auth/logout | Invalida la sesión |
+| GET /api/lookups | categories (solo raíces), subcategories (parent_id y sequence_number), importers y pending |
+| GET /api/products?q=&categoryId=&pending=true&page=1 | Búsqueda, categoría con descendientes, 50 resultados por página |
+| GET /api/products/{id} | Producto con versión |
+| POST /api/products | Crear producto pendiente |
+| PUT /api/products/{id} | Editar; version obligatorio para evitar sobrescritura |
+| POST /api/products/classify | {ids,categoryId?,importerId?}; categoryId es la subcategoría; código automático en transacción por lote |
+| POST /api/categories | {name,abbreviation,targetMarkup,minimumMargin}; solo categorías principales |
+| PUT /api/categories/{id} | Mismos campos; cambiar abreviación actualiza códigos de sus productos |
+| POST /api/subcategories | {name,categoryId,targetMarkup,minimumMargin}; categoryId es la categoría principal; número automático |
+| PUT /api/subcategories/{id} | Mismos campos; moverla asigna número en el destino y actualiza códigos de sus productos |
+| POST /api/importers | {name}; código automático |
+| PUT /api/importers/{id} | {name}; mantiene el código |
+| POST /api/excel/read | multipart/form-data con archivo en campo file; devuelve hojas, filas y marcas de celdas numéricas |
+| POST /api/excel/merge | {first,second,prefer: first o second}; devuelve filas, diferencias y errores |
+| POST /api/excel/export | {rows}; descarga .xlsx |
+| POST /api/excel/apply | {rows}; actualización por código de barras, nuevos pendientes |
+| POST /api/ocr/export | {reviewed:true,rows:[{productCode,name,quantity,price}]}; descarga .xlsx de cuatro columnas sin modificar el catálogo |
+| GET /api/products/export | Descarga catálogo .xlsx |
+| POST /api/pricing/recommend | {productId,extraCost,markup?,roundTo}; calcula sin guardar |
+| POST /api/pricing/apply | {productId,version,sellingPrice,completeReview}; guarda tras confirmación |
 
-## Ejemplo: registrar una venta
+ProductEdit: name, barcode, categoryId e importerId opcionales, cost, sellingPrice, taxRate, quantity, version. Por compatibilidad, el campo `categoryId` de un producto/clasificación representa la **subcategoría**, no la raíz. Una raíz se rechaza. `internalCode` ya no es editable; se genera como ABREVIACIÓN-NÚMERO SUBCATEGORÍA-NÚMERO PRODUCTO. Las respuestas incluyen `root_category_id`, `category`, `subcategory`, `subcategory_number`, `product_number` e `internal_code`. Un borrador sin subcategoría tiene número y código interno nulos.
 
-```json
-{
-  "locationId": 1,
-  "reference": "POS-0001042",
-  "lines": [
-    { "productId": 1, "quantity": 2, "unitPrice": null }
-  ]
-}
-```
+La numeración comienza en 1 para cada grupo y es independiente de los IDs. Repetir la misma clasificación conserva el número; mover a otro grupo asigna el siguiente. Los números no se reutilizan. Categorías y subcategorías no pueden cambiar de tipo ni anidarse en un tercer nivel. Cambiar códigos invalida versiones de producto antiguas. Los campos internos de numeración no son parámetros de escritura.
 
-`unitPrice: null` usa el precio vigente. La operación valida existencias, crea cabecera y líneas, descuenta el saldo, agrega movimientos al libro mayor y audita dentro de una sola transacción.
+SourceTable: rows (filas de datos sin encabezado), mapping (barcode, name, quantity, cost, sellingPrice, taxRate: índices desde 0; -1 sin columna), decimalSeparator (. o ,), label, numericCells opcional (matriz de booleanos devuelta por read), startRow (número de primera fila de datos en el origen).
 
-## Ejemplo: costo puesto y recomendación
+MergedProduct: barcode, name, quantity, cost, sellingPrice, taxRate. La exportación del catálogo añade internalCode, categoryCode, importerName, importerCode; la importación solo modifica los seis campos base y no sobrescribe la clasificación.
 
-```json
-{
-  "productId": 1,
-  "freight": 25,
-  "duties": 0,
-  "handling": 10,
-  "discount": 0,
-  "other": 0,
-  "comparableCount": 5
-}
-```
+Los importes JSON usan números. Los códigos de barras e internos son cadenas, nunca números. 400: validación; 401: sesión; 403: permiso; 404: no existe o módulo retirado; 409: unicidad o versión desactualizada; 429: exceso de intentos de login.
 
-La respuesta incluye `landedCost`, `suggestedPrice`, `markup`, `grossMargin`, `expectedProfit`, rango, confianza, explicación, advertencias y los comparables. El resultado queda `pending`; se aplica únicamente al enviar `approved` a la ruta de decisión.
+OCR: la imagen se procesa únicamente en el navegador; no hay endpoint de subida de fotos. La exportación requiere sesión (cualquier rol) y `reviewed:true`, entre 1 y 5000 filas, productCode de 1–100 caracteres, name de 1–300 y números no negativos hasta 1000000000. Quantity admite 3 decimales y Price 2; campos ausentes se rechazan. Se conservan códigos como texto y filas duplicadas. Los encabezados son exactamente `Product Code`, `Name`, `Quantity`, `Price`.

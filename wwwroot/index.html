@@ -2,63 +2,49 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#12372a">
-  <title>Primavera · Administración de tienda</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244b3e">
+  <title>Primavera · Productos y precios</title>
   <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/settings.css">
+  <link rel="stylesheet" href="/ocr.css">
 </head>
 <body>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <section id="login" class="login-shell">
-    <div class="login-art">
-      <div class="brand-mark large">P</div>
-      <p class="eyebrow">Almacén Primavera</p>
-      <h1>Todo tu inventario,<br><em>en orden.</em></h1>
-      <p class="login-copy">Productos, precios y existencias con trazabilidad completa para trabajar con confianza.</p>
-      <div class="login-feature"><span>✓</span> Control por ubicación y libro mayor permanente</div>
-      <div class="login-feature"><span>✓</span> Recomendaciones de precio explicables</div>
-      <div class="login-feature"><span>✓</span> Auditoría de cada cambio sensible</div>
+  <section id="login" class="login">
+    <div class="welcome">
+      <a class="brand" href="/"><span class="brand-icon">P</span> Almacén Primavera</a>
+      <p class="eyebrow">LO ESENCIAL, EN UN SOLO LUGAR</p>
+      <h1>Tus productos.<br>Todo en orden.</h1>
+      <p>Une tus archivos, organiza tus productos y decide sus precios.</p>
+      <ol><li>Fusiona tus Excel</li><li>Clasifica y revisa</li><li>Define tus precios</li></ol>
     </div>
     <form id="login-form" class="login-card">
-      <div class="brand-mobile"><div class="brand-mark">P</div> Primavera</div>
-      <p class="eyebrow">Bienvenido de nuevo</p>
-      <h2>Inicia sesión</h2>
-      <p class="muted">Usa tus credenciales de personal.</p>
-      <label>Usuario<input name="username" autocomplete="username" required></label>
+      <p class="eyebrow">BIENVENIDO</p><h2>Iniciar sesión</h2>
+      <label>Usuario<input name="username" autocomplete="username" required autofocus></label>
       <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-      <p id="login-error" class="form-error"></p>
-      <button class="button primary full" type="submit">Entrar al sistema <span>→</span></button>
-      <p class="login-hint">Primer acceso: admin / Primavera-Admin!</p>
+      <p id="login-error" class="error" role="alert"></p>
+      <button class="primary" type="submit">Entrar →</button>
     </form>
   </section>
-
-  <div id="app" class="app hidden">
-    <aside class="sidebar">
-      <div class="logo"><div class="brand-mark">P</div><div><strong>Primavera</strong><small>Administración</small></div></div>
-      <nav id="nav" aria-label="Navegación principal">
-        <button data-view="dashboard" class="active"><span>⌂</span> Resumen</button>
-        <p>OPERACIONES</p>
-        <button data-view="products"><span>▦</span> Productos</button>
-        <button data-view="inventory"><span>◫</span> Inventario</button>
-        <button data-view="csv-assistant"><span>⇩</span> Asistente CSV</button>
-        <button data-view="pricing"><span>◇</span> Precios</button>
-        <p>ANÁLISIS</p>
-        <button data-view="reports"><span>↗</span> Reportes</button>
-      </nav>
-      <div class="sidebar-foot"><div class="avatar">AD</div><div class="user-meta"><strong id="user-name">Administrador</strong><small id="user-role">Administrador</small></div><button id="logout" title="Cerrar sesión">↪</button></div>
-    </aside>
-    <main>
-      <header class="topbar">
-        <button id="menu" class="icon-button mobile">☰</button>
-        <div class="global-search"><span>⌕</span><input id="global-search" placeholder="Buscar producto, código o escanear…" autocomplete="off"><kbd>F2</kbd></div>
-        <div class="top-actions"><button class="icon-button" title="Alertas">♢<i></i></button><button id="quick-new" class="button primary">＋ Nuevo producto</button></div>
-      </header>
-      <div id="content" class="content"></div>
-    </main>
+  <div id="app" hidden>
+    <header class="app-header">
+      <a class="brand" href="/"><span class="brand-icon">P</span> Primavera <small>Productos y precios</small></a>
+      <div class="account"><span id="user-name"></span><button id="logout" class="quiet">Cerrar sesión</button></div>
+    </header>
+    <nav id="nav" aria-label="Secciones">
+      <button data-view="merge">01 <span>Fusionar Excel</span></button>
+      <button data-view="queue">02 <span>Por categorizar</span><span id="pending-count" class="count">0</span></button>
+      <button data-view="catalog">03 <span>Productos y categorías</span></button>
+      <button data-view="prices">04 <span>Ayudante de precios</span></button>
+      <button data-view="ocr">05 <span>Imagen a Excel</span></button>
+    </nav>
+    <main id="content" tabindex="-1"></main>
+    <footer>Almacén Primavera · Los precios solo cambian cuando tú los guardas.</footer>
   </div>
-
-  <div id="modal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-backdrop" data-close></div><div class="modal-panel"><button class="modal-close" data-close aria-label="Cerrar">×</button><div id="modal-content"></div></div></div>
+  <dialog id="dialog" aria-labelledby="dialog-title"><button id="close-dialog" class="close" aria-label="Cerrar">×</button><div id="dialog-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
   <script src="/app.js"></script>
+  <script src="/ocr-parser.js"></script>
+  <script src="/ocr.js"></script>
+  <script src="/catalog.js"></script>
 </body>
 </html>

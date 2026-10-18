@@ -7,3 +7,5 @@ data/*.db-wal
 .env
 TestResults/
 .verify-build/
+node_modules/
+.pnpm-store/

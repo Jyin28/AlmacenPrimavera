@@ -1,0 +1,14 @@
+{
+  "name": "almacen-primavera-tools",
+  "private": true,
+  "scripts": {
+    "vendor:ocr": "node scripts/vendor-ocr.mjs",
+    "test:ocr": "node --test tests/ocr-parser.test.cjs tests/ocr-state.test.cjs",
+    "test:ocr-engine": "node tests/ocr-engine.cjs"
+  },
+  "devDependencies": {
+    "tesseract.js": "7.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/spa": "1.0.0"
+  }
+}

@@ -39,6 +39,7 @@ public sealed class StoreDb
         cmd.CommandText = Schema;
         cmd.ExecuteNonQuery();
         Seed(db);
+        CatalogSchema.Initialize(db);
     }
 
     private static void Seed(SqliteConnection db)
@@ -60,18 +61,9 @@ public sealed class StoreDb
         if (Count("users") == 0)
         {
             var salt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
-            var password = Environment.GetEnvironmentVariable("DEFAULT_ADMIN_PASSWORD") ?? "Primavera-Admin!";
+            var password = Environment.GetEnvironmentVariable("DEFAULT_ADMIN_PASSWORD") ?? "12345678";
             Exec("INSERT INTO users(id,username,display_name,role,password_hash,password_salt,active,created_at) VALUES(1,'admin','Administrador','administrator',@hash,@salt,1,@now)",
                 ("@hash", HashPassword(password, salt)), ("@salt", salt), ("@now", Now()));
-        }
-        if (Count("departments") == 0)
-        {
-            Exec("INSERT INTO departments(id,name,code,active) VALUES (1,'Abarrotes','GRO',1),(2,'Bebidas','BEV',1),(3,'Hogar','HOM',1),(4,'Cuidado personal','PER',1)");
-            Exec("INSERT INTO categories(id,department_id,parent_id,name,code,minimum_margin,target_markup,required_attributes,active) VALUES " +
-                 "(1,2,NULL,'Bebidas','DRINK',25,40,'[\"packageSize\"]',1),(2,2,1,'Gaseosas','SODA',28,45,'[\"flavor\",\"packageSize\"]',1)," +
-                 "(3,1,NULL,'Despensa','PANTRY',22,35,'[]',1),(4,1,3,'Snacks','SNACK',30,50,'[\"packageSize\"]',1),(5,3,NULL,'Limpieza','CLEAN',25,42,'[]',1)");
-            Exec("INSERT INTO suppliers(id,name,email,phone,active) VALUES (1,'Distribuidora Central','pedidos@central.example','2200-0101',1),(2,'Mayorista Primavera','ventas@primavera.example','2200-0202',1)");
-            Exec("INSERT INTO locations(id,name,code,active) VALUES (1,'Tienda principal','MAIN',1),(2,'Bodega','WH',1)");
         }
         tx.Commit();
     }
